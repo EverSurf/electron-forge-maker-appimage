@@ -67,7 +67,7 @@ class MakerAppImage extends maker_base_1.default {
             if (maker !== undefined && isIForgeResolvableMaker(maker)) {
                 config = maker.config;
             }
-            const appFileName = `${appName}-${packageJSON.version}.AppImage`;
+            const appFileName = `${appName}-${packageJSON.version}-${targetArch}.AppImage`;
             const appPath = path_1.default.join(makeDir, appFileName);
             // construct the desktop file.
             const desktopMeta = {
@@ -86,16 +86,23 @@ class MakerAppImage extends maker_base_1.default {
                 desktopEntry += `\n${name}=${desktopMeta[name]}`;
             }
             desktopEntry += "\n";
-            // icons don't seem to work in AppImages anyway. this is just the default taken from the old AppImage maker.
-            const iconPath = path_1.default.join(dir, "../..", "node_modules/app-builder-lib/templates/icons/electron-linux");
-            const icons = [
-                { file: `${iconPath}/16x16.png`, size: 16 },
-                { file: `${iconPath}/32x32.png`, size: 32 },
-                { file: `${iconPath}/48x48.png`, size: 48 },
-                { file: `${iconPath}/64x64.png`, size: 64 },
-                { file: `${iconPath}/128x128.png`, size: 128 },
-                { file: `${iconPath}/256x256.png`, size: 256 },
-            ];
+            // These icons will be presented in .AppImage file thumbnail
+            let icons;
+            if ((config === null || config === void 0 ? void 0 : config.options) !== undefined && config.options.icon !== undefined) {
+                icons = [{ file: path_1.default.join(dir, "../..", config.options.icon), size: 0 }];
+            }
+            else {
+                // default Electron icons when "config.icon" isn't definied:const iconPath = path.join(
+                const iconPath = path_1.default.join(dir, "../..", "node_modules/app-builder-lib/templates/icons/electron-linux");
+                icons = [
+                    { file: `${iconPath}/16x16.png`, size: 16 },
+                    { file: `${iconPath}/32x32.png`, size: 32 },
+                    { file: `${iconPath}/48x48.png`, size: 48 },
+                    { file: `${iconPath}/64x64.png`, size: 64 },
+                    { file: `${iconPath}/128x128.png`, size: 128 },
+                    { file: `${iconPath}/256x256.png`, size: 256 },
+                ];
+            }
             const stageDir = path_1.default.join(makeDir, "__appImage-x64");
             if (!(0, fs_1.existsSync)(makeDir)) {
                 (0, fs_1.mkdirSync)(makeDir, { recursive: true });

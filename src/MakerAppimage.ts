@@ -44,7 +44,7 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
     const executableName = forgeConfig.packagerConfig.executableName || appName;
 
     // Check for any optional configuration data passed in from forge config, specific to this maker.
-    let config: AppImageForgeConfig | undefined;
+    let config: (AppImageForgeConfig & MakerAppImageConfig) | undefined;
 
     const maker = forgeConfig.makers.find(
       (maker) =>
@@ -55,7 +55,7 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
       config = maker.config;
     }
 
-    const appFileName = `${appName}-${packageJSON.version}.AppImage`;
+    const appFileName = `${appName}-${packageJSON.version}-${targetArch}.AppImage`;
     const appPath = path.join(makeDir, appFileName);
 
     // construct the desktop file.
@@ -77,20 +77,28 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
     }
     desktopEntry += "\n";
 
-    // icons don't seem to work in AppImages anyway. this is just the default taken from the old AppImage maker.
-    const iconPath = path.join(
-      dir,
-      "../..",
-      "node_modules/app-builder-lib/templates/icons/electron-linux"
-    );
-    const icons = [
-      { file: `${iconPath}/16x16.png`, size: 16 },
-      { file: `${iconPath}/32x32.png`, size: 32 },
-      { file: `${iconPath}/48x48.png`, size: 48 },
-      { file: `${iconPath}/64x64.png`, size: 64 },
-      { file: `${iconPath}/128x128.png`, size: 128 },
-      { file: `${iconPath}/256x256.png`, size: 256 },
-    ];
+    // These icons will be presented in .AppImage file thumbnail
+    let icons: {
+      [index: number]: { file: string; size: number };
+    };
+    if (config?.options !== undefined && config.options.icon !== undefined) {
+      icons = [{ file: path.join(dir, "../..", config.options.icon), size: 0 }];
+    } else {
+      // default Electron icons when "config.icon" isn't definied:const iconPath = path.join(
+      const iconPath = path.join(
+        dir,
+        "../..",
+        "node_modules/app-builder-lib/templates/icons/electron-linux"
+      );
+      icons = [
+        { file: `${iconPath}/16x16.png`, size: 16 },
+        { file: `${iconPath}/32x32.png`, size: 32 },
+        { file: `${iconPath}/48x48.png`, size: 48 },
+        { file: `${iconPath}/64x64.png`, size: 64 },
+        { file: `${iconPath}/128x128.png`, size: 128 },
+        { file: `${iconPath}/256x256.png`, size: 256 },
+      ];
+    }
 
     const stageDir = path.join(makeDir, "__appImage-x64");
 
