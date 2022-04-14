@@ -2,7 +2,7 @@ import MakerBase, { MakerOptions } from "@electron-forge/maker-base";
 import {
   ForgePlatform,
   IForgeResolvableMaker,
-  IForgeMaker
+  IForgeMaker,
 } from "@electron-forge/shared-types";
 import path from "path";
 import * as appBuilder from "app-builder-lib/out/util/appBuilder";
@@ -29,7 +29,7 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
   defaultPlatforms: ForgePlatform[] = ["linux"];
 
   isSupportedOnCurrentPlatform() {
-    return process.platform === "linux";
+    return process.platform === "linux" || process.platform === "darwin";
   }
 
   async make({
@@ -39,7 +39,7 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
     targetArch, // 'x64'
     packageJSON,
     targetPlatform, //'linux',
-    forgeConfig
+    forgeConfig,
   }: MakerOptions) {
     const executableName = forgeConfig.packagerConfig.executableName || appName;
 
@@ -47,7 +47,8 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
     let config: AppImageForgeConfig | undefined;
 
     const maker = forgeConfig.makers.find(
-      maker => isIForgeResolvableMaker(maker) && maker.name === makerPackageName
+      (maker) =>
+        isIForgeResolvableMaker(maker) && maker.name === makerPackageName
     );
 
     if (maker !== undefined && isIForgeResolvableMaker(maker)) {
@@ -67,7 +68,7 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
       StartupWMClass: packageJSON.productName as string,
       "X-AppImage-Version": packageJSON.version,
       Comment: packageJSON.description,
-      Categories: "Utility"
+      Categories: "Utility",
     };
 
     let desktopEntry = `[Desktop Entry]`;
@@ -88,7 +89,7 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
       { file: `${iconPath}/48x48.png`, size: 48 },
       { file: `${iconPath}/64x64.png`, size: 64 },
       { file: `${iconPath}/128x128.png`, size: 128 },
-      { file: `${iconPath}/256x256.png`, size: 256 }
+      { file: `${iconPath}/256x256.png`, size: 256 },
     ];
 
     const stageDir = path.join(makeDir, "__appImage-x64");
@@ -104,8 +105,10 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
 
     // if the user passed us a chmodChromeSandbox parameter, use that to modify the permissions of chrome-sandbox.
     // this sets up the ability to run the application conditionally with --no-sandbox on select systems.
-    if(config !== undefined && config.chmodChromeSandbox !== undefined) {
-      await exec(`chmod ${config.chmodChromeSandbox} ${path.join(dir, 'chrome-sandbox')}`);
+    if (config !== undefined && config.chmodChromeSandbox !== undefined) {
+      await exec(
+        `chmod ${config.chmodChromeSandbox} ${path.join(dir, "chrome-sandbox")}`
+      );
     }
 
     const args = [
@@ -125,8 +128,8 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
         desktopEntry: desktopEntry,
         executableName: executableName,
         icons: icons,
-        fileAssociations: []
-      })
+        fileAssociations: [],
+      }),
     ];
 
     // the --template option allows us to replace AppRun bash script with a custom version, e.g. a libstdc++ bootstrapper.

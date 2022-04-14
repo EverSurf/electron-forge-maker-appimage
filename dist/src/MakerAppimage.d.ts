@@ -10,5 +10,5 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
     makeDir, // '/home/build/Software/monorepo/packages/electron/out/make',
     targetArch, // 'x64'
     packageJSON, targetPlatform, //'linux',
-    forgeConfig }: MakerOptions): Promise<string[]>;
+    forgeConfig, }: MakerOptions): Promise<string[]>;
 }
