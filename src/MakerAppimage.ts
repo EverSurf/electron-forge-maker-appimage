@@ -6,6 +6,7 @@ import {
 } from "@electron-forge/shared-types";
 import path from "path";
 import * as appBuilder from "app-builder-lib/out/util/appBuilder";
+
 import { MakerAppImageConfig } from "./Config";
 import { mkdirSync, existsSync, rmdirSync } from "fs";
 import { exec } from "child_process";
@@ -24,7 +25,7 @@ const isIForgeResolvableMaker = (
 };
 
 export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
-  name = "appImage";
+  name = "AppImage";
 
   defaultPlatforms: ForgePlatform[] = ["linux"];
 
@@ -119,6 +120,22 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
       );
     }
 
+    const appImageOptions = config?.options?.mimeType?.length
+      ? {
+          fileAssociations: [
+            {
+              ext: "AppImage",
+              mimeType: config.options.mimeType[0], // pick the first one
+            },
+          ],
+          ...(config.options.mimeType.length > 1
+            ? {
+                mimeTypes: config.options.mimeType.slice(1), // add the rest
+              }
+            : {}),
+        }
+      : { fileAssociations: [] };
+
     const args = [
       "appimage",
       "--stage", // '/home/build/Software/monorepo/packages/electron/out/make/__appImage-x64',
@@ -136,10 +153,7 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
         desktopEntry: desktopEntry,
         executableName: executableName,
         icons: icons,
-        fileAssociations: [],
-        ...(config && config.options
-          ? { mimeTypes: config.options.mimeType }
-          : {}),
+        ...appImageOptions,
       }),
     ];
 

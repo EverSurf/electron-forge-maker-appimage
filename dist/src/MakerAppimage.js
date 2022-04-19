@@ -47,7 +47,7 @@ const isIForgeResolvableMaker = (maker) => {
 class MakerAppImage extends maker_base_1.default {
     constructor() {
         super(...arguments);
-        this.name = "appImage";
+        this.name = "AppImage";
         this.defaultPlatforms = ["linux"];
     }
     isSupportedOnCurrentPlatform() {
@@ -59,6 +59,7 @@ class MakerAppImage extends maker_base_1.default {
     targetArch, // 'x64'
     packageJSON, targetPlatform, //'linux',
     forgeConfig, }) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const executableName = forgeConfig.packagerConfig.executableName || appName;
             // Check for any optional configuration data passed in from forge config, specific to this maker.
@@ -116,6 +117,17 @@ class MakerAppImage extends maker_base_1.default {
             if (config !== undefined && config.chmodChromeSandbox !== undefined) {
                 yield (0, child_process_1.exec)(`chmod ${config.chmodChromeSandbox} ${path_1.default.join(dir, "chrome-sandbox")}`);
             }
+            const appImageOptions = ((_b = (_a = config === null || config === void 0 ? void 0 : config.options) === null || _a === void 0 ? void 0 : _a.mimeType) === null || _b === void 0 ? void 0 : _b.length)
+                ? Object.assign({ fileAssociations: [
+                        {
+                            ext: "AppImage",
+                            mimeType: config.options.mimeType[0], // pick the first one
+                        },
+                    ] }, (config.options.mimeType.length > 1
+                    ? {
+                        mimeTypes: config.options.mimeType.slice(1), // add the rest
+                    }
+                    : {})) : { fileAssociations: [] };
             const args = [
                 "appimage",
                 "--stage",
@@ -127,9 +139,7 @@ class MakerAppImage extends maker_base_1.default {
                 "--app",
                 dir,
                 "--configuration",
-                JSON.stringify(Object.assign({ productName: appName, productFilename: appName, desktopEntry: desktopEntry, executableName: executableName, icons: icons, fileAssociations: [] }, (config && config.options
-                    ? { mimeTypes: config.options.mimeType }
-                    : {}))),
+                JSON.stringify(Object.assign({ productName: appName, productFilename: appName, desktopEntry: desktopEntry, executableName: executableName, icons: icons }, appImageOptions)),
             ];
             // the --template option allows us to replace AppRun bash script with a custom version, e.g. a libstdc++ bootstrapper.
             if (config !== undefined && config.template) {
