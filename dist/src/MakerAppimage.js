@@ -127,14 +127,9 @@ class MakerAppImage extends maker_base_1.default {
                 "--app",
                 dir,
                 "--configuration",
-                JSON.stringify({
-                    productName: appName,
-                    productFilename: appName,
-                    desktopEntry: desktopEntry,
-                    executableName: executableName,
-                    icons: icons,
-                    fileAssociations: [],
-                }),
+                JSON.stringify(Object.assign({ productName: appName, productFilename: appName, desktopEntry: desktopEntry, executableName: executableName, icons: icons, fileAssociations: [] }, (config && config.options
+                    ? { mimeTypes: config.options.mimeType }
+                    : {}))),
             ];
             // the --template option allows us to replace AppRun bash script with a custom version, e.g. a libstdc++ bootstrapper.
             if (config !== undefined && config.template) {

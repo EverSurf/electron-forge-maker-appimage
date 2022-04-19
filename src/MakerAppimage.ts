@@ -137,6 +137,9 @@ export default class MakerAppImage extends MakerBase<MakerAppImageConfig> {
         executableName: executableName,
         icons: icons,
         fileAssociations: [],
+        ...(config && config.options
+          ? { mimeTypes: config.options.mimeType }
+          : {}),
       }),
     ];
 
